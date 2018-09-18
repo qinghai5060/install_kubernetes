@@ -56,9 +56,8 @@ EOF
 	systemctl start docker && systemctl enable docker
 	systemctl start kubelet && systemctl enable kubelet
 	docker_driver=$(docker info | grep -i cgroup | awk '{print $3}')
-	if [ -f /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ]; then
-		kubelet_driver=$(cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf | grep cgroup)
-		if [[ ! -z ${kubelet_driver} ]]; then
+	if [ -f /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ]; then		
+		if [[ ! -z $(cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf | grep cgroup) ]]; then
 			sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 		fi
 	fi
