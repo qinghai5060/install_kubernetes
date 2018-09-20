@@ -37,68 +37,103 @@ foreach line $data {
                 send "ssh $user1@$line\n"
         }
 
-        send_user -- "\n-------------start to login with $user1 -------------- "
+        send_user -- "\n-------------start to login $line with $user1 -------------- "
         expect {
-                "*$*" {
+            "*$*" {
                 send "su - $user2 \n"
                 expect {
-                "*assword:" { 
-			send "$pass2\n" 
-        		expect {
-                	"*#*" {
-                        	send "ls /tmp\r"
+                    "*assword:" { 
+			            send "$pass2\n" 
+        		        expect {
+                	        "*#*" {
+                        	    send "$cmd\nexit\nexit\n"
                                 expect eof                         	
-				}
-                        "Authentication failure" {
-                              send_user "\nAuthentication failure when login $line, program quit!\n"
-        	              exit  
-                        }
-                	"Permission denied" {
-	                       send_user "\nPermission denied when login $line, program quit!\n"
-        	               exit
-	               		}
-			}
-		}
-                "su: user $user2 does not exist" {
+				            }
+                            "Authentication failure" {
+                                send_user "\nAuthentication failure when login $line, program quit!\n"
+        	                    exit  
+                            }
+                	        "Permission denied" {
+	                            send_user "\nPermission denied when login $line, program quit!\n"
+        	                    exit
+	               		    }
+			            }
+		            }
+                    "su: user $user2 does not exist" {
                         send_user "\nVerification failed:user $user2 does not exist, program quit!\n"
                         exit
+                    }
                 }
-           }
-        }
-         "*#*" {
+            }
+            "*#*" {
                 send "su - $user2 \n"
                 expect {
-                "*assword:" { 
-			send "$pass2\n" 
-        		expect {
-                	"*#*" {
-                        	send "$cmd \r"          					
-				}
-                	"Permission denied" {
-	                       send_user "\nPermission denied, program quit!\n"
-        	               exit
-	               		}
-			}
-		}
-                "su: user $user2 does not exist" {
+                    "*assword:" { 
+			            send "$pass2\n" 
+        		        expect {
+                	        "*#*" {
+                        	    send "$cmd \nexit\nexit\n"
+                                expect eof           					
+				            }
+                	        "Permission denied" {
+	                            send_user "\nPermission denied, program quit!\n"
+        	                    exit
+	               		    }
+                            "Authentication failure" {
+                                send_user "\nAuthentication failure when login $line, program quit!\n"
+        	                    exit  
+                            }
+			            }
+		            }
+                    "su: user $user2 does not exist" {
                         send_user "\nuser $user2 does not exist!\n"
                         exit
+                    }
                 }
-           }
-        }
-        "Permission denied*" {
-             send_user "\nPermission denied, program quit!\n"
-             exit   
-           }
+            }
+            "*assword:" { 
+                send_user "\nPassword for user($user2) may be not right, program quit!\n"
+                exit   
+            }
+            "$user1" { 
+                send "su - $user2 \n"
+                expect {
+                    "*assword:" { 
+			            send "$pass2\n" 
+        		        expect {
+                	        "*#*" {
+                        	    send "$cmd \nexit\nexit\n"
+                                expect eof          					
+				            }
+                	        "Permission denied" {
+	                            send_user "\nPermission denied, program quit!\n"
+        	                    exit
+	               		    }
+                            "Authentication failure" {
+                                send_user "\nAuthentication failure when login $line, program quit!\n"
+        	                    exit  
+                            }
+			            }
+		            }
+                    "su: user $user2 does not exist" {
+                        send_user "\nuser $user2 does not exist!\n"
+                        exit
+                    }
+                }   
+            }
+            "Permission denied*" {
+                send_user "\nPermission denied, program quit!\n"
+                exit   
+            }
+            "Authentication failure" {
+                send_user "\nAuthentication failure when login $line, program quit!\n"
+        	    exit  
+            }
+            timeout {
+                send_user "\nTimeout, program quit!\n"
+                exit
+            }
         }
         
-        expect {
-                "*#*" {
-                        exit 0
-                }
-                 "*$*" {
-                        exit 0
-                }
-        }
         send_user -- "\n--------------Host($line )has been finished!-------------\n"
 }
